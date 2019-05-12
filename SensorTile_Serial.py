@@ -4,7 +4,7 @@ import sys
 import numpy
 
 numbrofruns=0
-
+ttimes=0
 class serial_SensorTile():
 	def __init__(self, address, baud_rate=9600, timeout=2, python3=False):
 		self.ser = None
@@ -16,7 +16,7 @@ class serial_SensorTile():
 		self.data_check = 0
 		self.python3 = python3
 
-	def init_connection(self, numberofruns):
+	def init_connection(self, numberofruns,times):
 		print ("Start Serial Connection")
 		try:
 			ser = serial.Serial(self.address, self.baud_rate, timeout=self.timeout)
@@ -30,7 +30,8 @@ class serial_SensorTile():
 		#time.sleep(0.5) #why is there a sleep 500 ms????
 		self.ser.flushInput()
 		print(numberofruns)
-		return numberofruns
+		ttimes=times
+		return numberofruns, times
 
 	def close_connection(self):
 		print ("Close Serial Connection")
@@ -39,7 +40,7 @@ class serial_SensorTile():
 	def is_ready(self, bytes_expected):
 		return self.ser.in_waiting >= bytes_expected
 
-	def collect_data(self, numberruns):
+	def collect_data(self, numberruns,times):
 		print(numberruns)
 		if self.data_check:
 			# read a line
@@ -69,20 +70,24 @@ class serial_SensorTile():
 				accelx = float(data[0])
 				accely = float(data[1])
 				accelz = float(data[2])
+				ttimes=times
 				#he wants accelerometer x y z data. 
 				#storeme=[]
 				#storeme.append(dis)
 				#storeme.append(str(','))
 				#storeme.append(accel)
 				print(numberruns)
+				print(ttimes)
+				print("before loop")
 				#we can try to debug this tmrw
-				for i in range(int(numberruns)): #so if i said 2, then 0 1 , i want 1 2
+				for i in range(int(numberruns[0])): #so if i said 2, then 0 1 , i want 1 2
 					
 					#below code will run it for 900 seconds
 					#how do i indicate i want to run this for 1 minute
 					#span a t_end
 					#print(c)
 
+					print("hi")
 					t_firstend=time.time()+5
 					while time.time()<t_firstend:
 						ser_bytes = self.ser.readline()
@@ -97,7 +102,7 @@ class serial_SensorTile():
 						accelz = float(data[2])
 						print ("{}".format(data))
 
-					t_end=time.time()+5 #thats for 6 secs?, lets make it collect data for 
+					t_end=time.time()+float(ttimes) #thats for 6 secs?, lets make it collect data for 
 					# 6 seconds instead.
 					print("hi")
 					print("run \n")
