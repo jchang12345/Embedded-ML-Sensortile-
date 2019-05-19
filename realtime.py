@@ -29,15 +29,20 @@ class RealTime_Classifier():
 		if model_name == None:
 			reg = 1e-3
 			self.model = tf.keras.Sequential([ \
-			Conv1D(32, kernel_size = 5, \
+			Conv1D(16, kernel_size = 5, \
 				strides=1, activation = 'relu', \
 				kernel_regularizer = l2(reg), \
 				bias_regularizer = l2(reg), \
-				input_shape=(window_size, 3)), \
-			Flatten(), \
-			Dense(16, activation='relu', \
-				kernel_regularizer=l2(reg), \
-				bias_regularizer=l2(reg)), \
+				input_shape=(window_size, 3)), \\
+			Conv1D(8, kernel_size = 5, \
+				strides=1, activation = 'relu', \
+				kernel_regularizer = l2(reg), \
+				bias_regularizer = l2(reg)), \
+			Conv1D(4, kernel_size = 5, \
+				strides=1, activation = 'relu', \
+				kernel_regularizer = l2(reg), \
+				bias_regularizer = l2(reg)), \
+                        Flatten(), \
 			Dense(8, activation='relu', \
 				kernel_regularizer=l2(reg), \
 				bias_regularizer=l2(reg)), \
@@ -47,7 +52,6 @@ class RealTime_Classifier():
 			Dense(2, activation='softmax', \
 				kernel_regularizer=l2(reg), \
 				bias_regularizer=l2(reg)) \
-			])
 		else:
 			self.model = load_model('model.h5')
 		
