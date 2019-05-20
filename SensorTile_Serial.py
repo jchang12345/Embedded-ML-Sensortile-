@@ -134,7 +134,14 @@ class serial_SensorTile():
 
 						
 					print (i+1)
-					print("\n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
+					print ("prepare for next motion \n")
 					f.close()
 					time.sleep(3)
 
@@ -142,6 +149,7 @@ class serial_SensorTile():
 
 				while 1:
 					print("done with test. please ctrl c to exit data collect")
+
 					tstall=time.time()+3
 					time.sleep(3)
 
@@ -155,7 +163,7 @@ class serial_SensorTile():
 			self.ser.readline()
 			self.data_check = 1
 			return 0, 0, 0
-	def collect_test_data(self, numberruns,times):
+	def collect_test_data(self, numberruns,times,clf):
 		print(numberruns)
 		if self.data_check:
 			# read a line
@@ -176,7 +184,7 @@ class serial_SensorTile():
 				ttimes=times
 				print(numberruns)
 				print(ttimes)
-				realtime=RealTime_Classifier(model_name='model.h5')
+				#clf=RealTime_Classifier(model_name='model.h5')
 				t_firstend=time.time()+float(times)
 				counter=0
 				while time.time()<t_firstend:
@@ -189,9 +197,9 @@ class serial_SensorTile():
 					accelx = float(data[0])
 					accely = float(data[1])
 					accelz = float(data[2])
-					realtime.update([accelx, accely, accelz])
+					clf.update([accelx, accely, accelz])
 					if counter==10:
-						print(realtime.test())
+						print(clf.test())
 						counter=0
 					counter+=1
 					

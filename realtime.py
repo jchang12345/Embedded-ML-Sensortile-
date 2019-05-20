@@ -24,7 +24,7 @@ class EarlyStoppingCallback(tflearn.callbacks.Callback):
 			raise StopIteration
 
 class RealTime_Classifier():
-	def __init__(self, model_name=None, window_size=80, cutoff_freq_high=0.1, cutoff_freq_low=0.3, apply_hpf=True, apply_lpf=True):
+	def __init__(self, model_name=None, window_size=200, cutoff_freq_high=0.01, cutoff_freq_low=0.5, apply_hpf=True, apply_lpf=True):
 		# define tensorflow model
 		if model_name == None:
 			reg = 1e-3
@@ -33,7 +33,7 @@ class RealTime_Classifier():
 				strides=1, activation = 'relu', \
 				kernel_regularizer = l2(reg), \
 				bias_regularizer = l2(reg), \
-				input_shape=(window_size, 3)), \\
+				input_shape=(window_size, 3)), \
 			Conv1D(8, kernel_size = 5, \
 				strides=1, activation = 'relu', \
 				kernel_regularizer = l2(reg), \
@@ -46,12 +46,9 @@ class RealTime_Classifier():
 			Dense(8, activation='relu', \
 				kernel_regularizer=l2(reg), \
 				bias_regularizer=l2(reg)), \
-			Dense(4, activation='relu', \
-				kernel_regularizer=l2(reg), \
-				bias_regularizer=l2(reg)), \
 			Dense(2, activation='softmax', \
 				kernel_regularizer=l2(reg), \
-				bias_regularizer=l2(reg)) \
+				bias_regularizer=l2(reg))])
 		else:
 			self.model = load_model('model.h5')
 		
@@ -93,27 +90,34 @@ class RealTime_Classifier():
 		# filter the data
 		for i, sample in enumerate(X_train):
 			if i < 2:
+				pass
+				'''
 				plt.figure()
+				plt.subplot(211)
 				for j in range(sample.shape[-1]):
 					plt.plot(X_train[i,:,j].tolist())
 				plt.xlabel('time')
 				plt.ylabel('acc')
 				plt.title('Prefiltered')
-				plt.show()
+				'''
+				#plt.show()
 			for j in range(sample.shape[-1]):
 				if self.apply_hpf:
 					X_train[i,:,j] = signal.filtfilt(self.b_h,self.a_h,sample[:,j])
 				if self.apply_lpf:
 					X_train[i,:,j] = signal.filtfilt(self.b_l,self.a_l,sample[:,j])
 			if i < 2:
-				plt.figure()
+				#plt.figure()
+				pass
+				'''
+				plt.subplot(212)
 				for j in range(sample.shape[-1]):
 					plt.plot(X_train[i,:,j].tolist())
 				plt.xlabel('time')
 				plt.ylabel('acc')
 				plt.title('Postfiltered')
 				plt.show()
-
+				'''
 
 		# filter the data
 		for i, sample in enumerate(X_val):
@@ -125,7 +129,7 @@ class RealTime_Classifier():
 		
 		# define optimizer
 		save_file = 'model.h5'
-		optimizer = Adam()
+		optimizer = SGD(lr=1e-3)
 		self.model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 		self.model.summary()
 		self.model.save(save_file)
@@ -140,6 +144,55 @@ class RealTime_Classifier():
 						validation_data = (X_val, to_categorical(y_val)))
 
 		print("saved trained model to {}".format(save_file))
+		#self.validate(files)
+
+	def validate(self, files):
+		# hyperparameter
+		num_classes = len(files)
+		
+		# get data from each file
+		X_train_list, y_train_list, X_val_list, y_val_list = [], [], [], []
+		for i, file in enumerate(files):
+			X_raw = np.genfromtxt(join('data', file),delimiter=',')
+			train_val_split = int(2/3*len(X_raw))
+			X_train, y_train = self._preprocess(X_raw[:train_val_split], self.window_size, i)
+			X_val, y_val = self._preprocess(X_raw[train_val_split:], self.window_size, i)
+			X_train_list.append(X_train)
+			y_train_list.append(y_train)
+			X_val_list.append(X_val)
+			y_val_list.append(y_val)
+		# concatenate the data
+		X_train = np.vstack(X_train_list)
+		y_train = np.hstack(y_train_list)
+		X_val = np.vstack(X_val_list)
+		y_val = np.hstack(y_val_list)
+		
+		# shuffle the data
+		X_train, y_train = self._shuffle_data(X_train, y_train)
+		X_val, y_val = self._shuffle_data(X_val, y_val)
+		
+		# filter the data
+		for i, sample in enumerate(X_train):
+			for j in range(sample.shape[-1]):
+				if self.apply_hpf:
+					X_train[i,:,j] = signal.filtfilt(self.b_h,self.a_h,sample[:,j])
+				if self.apply_lpf:
+					X_train[i,:,j] = signal.filtfilt(self.b_l,self.a_l,sample[:,j])
+
+
+		# filter the data
+		for i, sample in enumerate(X_val):
+			for j in range(sample.shape[-1]):
+				if self.apply_hpf:
+					X_val[i,:,j] = signal.filtfilt(self.b_h,self.a_h,sample[:,j])
+				if self.apply_lpf:
+					X_val[i,:,j] = signal.filtfilt(self.b_l,self.a_l,sample[:,j])
+		
+		probs = self.model.predict(np.array(X_val), batch_size = 256)
+		print(y_val[:10])
+		print(probs[:10])
+		print(np.sum(abs(to_categorical(y_val) - probs))/len(y_val))
+		print(np.sum(abs(to_categorical(y_val) - to_categorical(y_val)))/len(y_val))
 
 	def test(self):
 		# filter the data

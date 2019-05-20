@@ -35,10 +35,12 @@ if __name__ == "__main__":
 	numofruns=sensortile.init_connection(times)
 	accelx, accely, accelz = sensortile.collect_data(numofruns,times)
 	accelx, accely, accelz = sensortile.collect_data(numofruns,times)
-	realtime=RealTime_Classifier()
+	clf=RealTime_Classifier()
 
-	realtime.train(['acc_data_1.csv','acc_data_2.csv'])#gen_model()
+	clf.train(['acc_data_1.csv','acc_data_2.csv'],40)#gen_model()
 	timetest=40
 	numofruns=1
-	accelx, accely, accelz = sensortile.collect_test_data(numofruns,timetest)
+	#clf=RealTime_Classifier('model.h5')
+	#clf.validate(['acc_data_1.csv','acc_data_2.csv'])
+	accelx, accely, accelz = sensortile.collect_test_data(numofruns,timetest,clf)
 	sensortile.close_connection()
