@@ -1,4 +1,3 @@
-#code that brings everything together
 import serial
 import time
 import sys
@@ -10,6 +9,11 @@ import matplotlib.animation as animation
 import SensorTile_Serial
 from gen_model import gen_model
 from realtime import RealTime_Classifier
+
+'''****IN ORDER TO RUN:****
+python3 main.py /dev/cu.usb[serialportaddr]
+
+'''
 
 #  Serial setup according to command line arguments
 numberruns=0
@@ -28,19 +32,27 @@ baud_rate = 9600
 timeout = 2
 
 
-
+#main program
 if __name__ == "__main__":
+	#initialize sensortile and serial connection, as well as # of input motions and time per motion
 	sensortile = SensorTile_Serial.serial_SensorTile(address, baud_rate, timeout, python3)
-	times=30#30 or bigger when needed
-	numofruns=sensortile.init_connection(times)
-	accelx, accely, accelz = sensortile.collect_data(numofruns,times)
-	accelx, accely, accelz = sensortile.collect_data(numofruns,times)
+	numofruns,times=sensortile.init_connection()
+
+	#collect data
+	sensortile.collect_data(numofruns,times)
+	sensortile.collect_data(numofruns,times)
+
+
+	#classify the data by creating a classifier
 	clf=RealTime_Classifier()
 
-	clf.train(['acc_data_1.csv','acc_data_2.csv'],40)#gen_model()
+	#train the classifier on csv data. 
+	clf.train(['acc_data_1.csv','acc_data_2.csv'],40)
+	
+	#set the time to test here, real time testing input motion
 	timetest=40
 	numofruns=1
-	#clf=RealTime_Classifier('model.h5')
-	#clf.validate(['acc_data_1.csv','acc_data_2.csv'])
-	accelx, accely, accelz = sensortile.collect_test_data(numofruns,timetest,clf)
+
+	#actually test the input motion.
+	sensortile.collect_test_data(numofruns,timetest,clf)
 	sensortile.close_connection()
