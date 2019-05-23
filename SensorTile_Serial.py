@@ -156,9 +156,9 @@ class serial_SensorTile():
 				accelz = float(data[2])
 				ttimes=times
 				print("Running test for this amount of time in seconds: "+str(ttimes))
-				sleep(2) #let them know how long u are about to run for
+				time.sleep(2) #let them know how long u are about to run for
 
-				t_firstend=time.time()+float(times)
+				t_firstend=time.time()+float(ttimes)
 
 				#initialize a counter to count 10 internal clk cycle. we could easily change this to match seconds instead. before each classification to slow it down
 				counter=0
@@ -176,6 +176,8 @@ class serial_SensorTile():
 					clf.update([accelx, accely, accelz])
 					if counter==10:
 						print(clf.test()) #print prediction, motion 1 on first index, motion 2 on second index.
+						#a,b=(clf.test())
+						#print ("I think it is a with probability :" + str(a))
 						counter=0
 					counter+=1
 					
