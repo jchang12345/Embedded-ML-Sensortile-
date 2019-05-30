@@ -107,16 +107,24 @@ class serial_SensorTile():
 						f.write(str(accelz))
 						f.write('\n')
 
-						
-					print ("Finished motion : " +str((i)+1))
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
-					print ("prepare for next motion \n")
+					if(i<len(numberruns[0])-1):	
+						print ("Finished motion : " +str((i)+1))
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+						print ("prepare for next motion \n")
+					if(i==len(numberruns[0])-1):
+						print ("Finished motion : " +str((i)+1))
+						print("saving last results \n")
+						print("saving last results \n")
+						print("saving last results \n")
+						print("saving last results \n")
+						print("saving last results \n")
+						print("saving last results \n")
 					f.close()
 
 					#sleep for 3 seconds so we know we are prepping for next motion.
